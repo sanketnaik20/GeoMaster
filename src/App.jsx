@@ -110,6 +110,12 @@ function App() {
               >
                 Continents
               </button>
+              <button 
+                className={`category-chip ${category === 'flag' ? 'active' : ''}`}
+                onClick={() => setCategory('flag')}
+              >
+                Flags
+              </button>
             </div>
 
             <div className="mode-select">
@@ -147,9 +153,21 @@ function App() {
             
             <div className="question-area">
               <span className="sub-label">
-                {category === 'capital' ? 'Identify the capital of' : 'Which continent is this?'}
+                {category === 'capital' ? 'Identify the capital of' : 
+                 category === 'continent' ? 'Which continent is this?' : 
+                 'Identify this country'}
               </span>
-              <h2 className="country-name">{game.currentQuestion?.country}</h2>
+              {category === 'flag' ? (
+                <div className="flag-display-container">
+                  <img 
+                    src={`https://flagcdn.com/w320/${game.currentQuestion?.code}.png`} 
+                    alt="Flag" 
+                    className="flag-img"
+                  />
+                </div>
+              ) : (
+                <h2 className="country-name">{game.currentQuestion?.country}</h2>
+              )}
             </div>
 
             <div className="options-grid">
@@ -208,6 +226,27 @@ function App() {
           background: var(--accent-soft);
           color: var(--primary);
           border-color: var(--primary);
+        }
+        .flag-display-container {
+          margin: 20px 0;
+          display: flex;
+          justify-content: center;
+          animation: fadeIn 0.5s ease-out;
+        }
+        .flag-img {
+          max-width: 240px;
+          height: auto;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+          border: 4px solid white;
+          transition: transform 0.3s ease;
+        }
+        .flag-img:hover {
+          transform: scale(1.05);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
     </div>

@@ -24,7 +24,16 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
     const randomIdx = Math.floor(Math.random() * countries.length);
     const correctCountry = countries[randomIdx];
     
-    const targetField = quizCategory === 'capital' ? 'capital' : 'continent';
+    let targetField;
+    if (quizCategory === 'capital') {
+      targetField = 'capital';
+    } else if (quizCategory === 'continent') {
+      targetField = 'continent';
+    } else {
+      // Flag mode: answer is the country name
+      targetField = 'country';
+    }
+    
     const correctAnswer = correctCountry[targetField];
     
     // Generate distractors
