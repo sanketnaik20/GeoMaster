@@ -1,0 +1,27 @@
+.result-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.result-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.result-description {
+  color: var(--text-sub);
+  font-size: 1.1rem;
+  margin-bottom: 40px;
+}
+
+.score-highlight {
+  color: var(--primary);
+  font-size: 1.4rem;
+}
+
+.result-card .actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}

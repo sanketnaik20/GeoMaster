@@ -1,0 +1,36 @@
+.bg-illustration {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.shape {
+  position: absolute;
+  border: 1px solid var(--primary);
+  opacity: 0.1;
+  animation: float 20s infinite ease-in-out;
+  will-change: transform, opacity;
+}
+
+.circle-1 {
+  top: -5%; left: -5%; width: 45vw; height: 45vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+  animation-delay: 0s;
+}
+
+.circle-2 {
+  bottom: 5%; right: -5%; width: 35vw; height: 35vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  opacity: 0.05;
+  animation-delay: -5s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(2%, 4%) rotate(2deg); }
+  66% { transform: translate(-1%, -2%) rotate(-1deg); }
+}

@@ -13,6 +13,7 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
 
   const [streak, setStreak] = useState(0);
   const [multiplier, setMultiplier] = useState(1);
+  const [nextQuestionData, setNextQuestionData] = useState(null);
 
   // Load Highscore
   useEffect(() => {
@@ -24,57 +25,69 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
 
   // Update Multiplier based on streak
   useEffect(() => {
-    if (streak >= 15) setMultiplier(3);
-    else if (streak >= 10) setMultiplier(2.5);
-    else if (streak >= 5) setMultiplier(2);
-    else if (streak >= 3) setMultiplier(1.5);
-    else setMultiplier(1);
-  }, [streak]);
+    let m = 1;
+    if (streak >= 15) m = 3;
+    else if (streak >= 10) m = 2.5;
+    else if (streak >= 5) m = 2;
+    else if (streak >= 3) m = 1.5;
+    if (m !== multiplier) setMultiplier(m);
+  }, [streak, multiplier]);
 
-  // Generate Question
-  const generateQuestion = useCallback(() => {
+  // Helper to get formatted question data
+  const getQuestionData = useCallback(() => {
     const randomIdx = Math.floor(Math.random() * countries.length);
-    const correctCountry = countries[randomIdx];
+    const country = countries[randomIdx];
     
-    let targetField;
-    if (quizCategory === 'capital') {
-      targetField = 'capital';
-    } else if (quizCategory === 'continent') {
-      targetField = 'continent';
-    } else {
-      // Flag mode: answer is the country name
-      targetField = 'country';
-    }
+    let field = quizCategory === 'capital' ? 'capital' : 
+                quizCategory === 'continent' ? 'continent' : 'country';
     
-    const correctAnswer = correctCountry[targetField];
-    
-    // Generate distractors
+    const answer = country[field];
+    const pool = [...new Set(countries.map(c => c[field]))];
     let distractors = new Set();
-    const pool = [...new Set(countries.map(c => c[targetField]))];
     
-    while (distractors.size < 3 && distractors.size < pool.length - 1) {
+    while (distractors.size < 3) {
       const d = pool[Math.floor(Math.random() * pool.length)];
-      if (d !== correctAnswer) distractors.add(d);
+      if (d !== answer) distractors.add(d);
     }
     
-    const allOptions = [...distractors, correctAnswer].sort(() => Math.random() - 0.5);
-    
-    setCurrentQuestion({
-      ...correctCountry,
-      answer: correctAnswer,
-      type: quizCategory
-    });
-    setOptions(allOptions);
+    return {
+      question: { ...country, answer, type: quizCategory },
+      options: [...distractors, answer].sort(() => Math.random() - 0.5)
+    };
+  }, [quizCategory]);
+
+  // Prefetch Image helper
+  const prefetchImage = (url) => {
+    if (!url) return;
+    const img = new Image();
+    img.src = url;
+  };
+
+  // Generate Question with prefetching
+  const generateQuestion = useCallback(() => {
+    const data = nextQuestionData || getQuestionData();
+    setCurrentQuestion(data.question);
+    setOptions(data.options);
     setTimer(10); 
     setFeedback(null);
-  }, [quizCategory]);
+
+    // Prepare NEXT question and prefetch its image
+    const next = getQuestionData();
+    setNextQuestionData(next);
+    
+    if (quizCategory === 'flag') {
+      prefetchImage(`https://flagcdn.com/w320/${next.question.code}.png`);
+    } else if (quizCategory === 'continent') {
+      prefetchImage(`https://raw.githubusercontent.com/djaiss/mapsicon/master/all/${next.question.code}/256.png`);
+    }
+  }, [quizCategory, nextQuestionData, getQuestionData]);
 
   // Initialize
   useEffect(() => {
     generateQuestion();
-  }, [generateQuestion]);
+  }, []); // Only on mount
 
-  // Timer Logic (Only for Time Attack)
+  // Timer Logic
   useEffect(() => {
     if (gameMode === 'zen' || isGameOver || feedback) return;
 
@@ -103,7 +116,6 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
     } else {
       setFeedback('wrong');
       setStreak(0);
-      // Store the wrong answer for feedback display
       setCurrentQuestion(prev => ({ ...prev, selectedAnswer: selected }));
       playIncorrect();
       setTimeout(() => setIsGameOver(true), 1200);
@@ -113,12 +125,12 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
   const resetGame = () => {
     if (score > highScore) {
       setHighScore(score);
-      const key = `geoMaster_highScore_${gameMode}_${quizCategory}`;
-      localStorage.setItem(key, score);
+      localStorage.setItem(`geoMaster_highScore_${gameMode}_${quizCategory}`, score);
     }
     setScore(0);
     setStreak(0);
     setIsGameOver(false);
+    setNextQuestionData(null);
     generateQuestion();
   };
 
