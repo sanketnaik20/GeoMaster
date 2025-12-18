@@ -21,7 +21,7 @@ const LoadingScreen = ({ onComplete }) => {
 
     const timer = setTimeout(() => {
       onComplete();
-    }, 1000);
+    }, 600);
 
     return () => clearTimeout(timer);
   }, [onComplete]);

@@ -1,9 +1,19 @@
 // src/hooks/useSound.js
 import { useCallback } from 'react';
 
+let audioCtx = null;
+
 export const useSound = () => {
   const playTone = useCallback((freq, type, duration) => {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    // Resume context if it was suspended (browser policy)
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
     const osc = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 

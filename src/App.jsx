@@ -8,10 +8,10 @@ import BgIllustration from './components/layout/BgIllustration';
 import MainMenu from './components/home/MainMenu';
 import QuizView from './components/game/QuizView';
 import ResultView from './components/game/ResultView';
+import LoadingScreen from './components/common/LoadingScreen';
 
 // Lazy loaded
 const GlobeWordle = lazy(() => import('./components/game/GlobeWordle'));
-const LoadingScreen = lazy(() => import('./components/common/LoadingScreen'));
 
 // Styles
 import './styles/index.css';
@@ -104,9 +104,7 @@ function App() {
         />
       )}
       
-      <Suspense fallback={null}>
-        {isLoading && <LoadingScreen onComplete={onLoadingComplete} />}
-      </Suspense>
+      {isLoading && <LoadingScreen onComplete={onLoadingComplete} />}
 
       <BgIllustration />
 
