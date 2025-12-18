@@ -13,7 +13,22 @@
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
   --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Continent Themes */
+  --theme-africa: #e67e22;
+  --theme-asia: #e74c3c;
+  --theme-europe: #3498db;
+  --theme-north-america: #2ecc71;
+  --theme-south-america: #9b59b6;
+  --theme-oceania: #1abc9c;
 }
+
+[data-continent="Africa"] { --primary: var(--theme-africa); --accent-soft: rgba(230, 126, 34, 0.1); }
+[data-continent="Asia"] { --primary: var(--theme-asia); --accent-soft: rgba(231, 76, 60, 0.1); }
+[data-continent="Europe"] { --primary: var(--theme-europe); --accent-soft: rgba(52, 152, 219, 0.1); }
+[data-continent="North America"] { --primary: var(--theme-north-america); --accent-soft: rgba(46, 204, 113, 0.1); }
+[data-continent="South America"] { --primary: var(--theme-south-america); --accent-soft: rgba(155, 89, 182, 0.1); }
+[data-continent="Oceania"] { --primary: var(--theme-oceania); --accent-soft: rgba(26, 188, 156, 0.1); }
 
 [data-theme="light"] {
   --bg-color: #fdfcf0; /* Warm Rice/Cream */

@@ -11,6 +11,9 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
   const [isGameOver, setIsGameOver] = useState(false);
   const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong'
 
+  const [streak, setStreak] = useState(0);
+  const [multiplier, setMultiplier] = useState(1);
+
   // Load Highscore
   useEffect(() => {
     const key = `geoMaster_highScore_${gameMode}_${quizCategory}`;
@@ -18,6 +21,15 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
     if (stored) setHighScore(parseInt(stored, 10));
     else setHighScore(0);
   }, [gameMode, quizCategory]);
+
+  // Update Multiplier based on streak
+  useEffect(() => {
+    if (streak >= 15) setMultiplier(3);
+    else if (streak >= 10) setMultiplier(2.5);
+    else if (streak >= 5) setMultiplier(2);
+    else if (streak >= 3) setMultiplier(1.5);
+    else setMultiplier(1);
+  }, [streak]);
 
   // Generate Question
   const generateQuestion = useCallback(() => {
@@ -83,12 +95,14 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
     if (feedback || isGameOver) return;
 
     if (selected === currentQuestion.answer) {
-      setScore(s => s + 1);
+      setStreak(s => s + 1);
+      setScore(s => s + (1 * multiplier));
       setFeedback('correct');
       playCorrect();
       setTimeout(generateQuestion, 1200);
     } else {
       setFeedback('wrong');
+      setStreak(0);
       // Store the wrong answer for feedback display
       setCurrentQuestion(prev => ({ ...prev, selectedAnswer: selected }));
       playIncorrect();
@@ -103,6 +117,7 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
       localStorage.setItem(key, score);
     }
     setScore(0);
+    setStreak(0);
     setIsGameOver(false);
     generateQuestion();
   };
@@ -115,6 +130,8 @@ export const useGame = (gameMode, quizCategory = 'capital') => {
     timer,
     isGameOver,
     feedback,
+    streak,
+    multiplier,
     handleAnswer,
     resetGame
   };

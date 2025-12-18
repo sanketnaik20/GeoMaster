@@ -1,7 +1,16 @@
 import React from 'react';
-import { Moon, Sun, Compass } from 'lucide-react';
+import { Moon, Sun, Compass, Volume2, VolumeX, Smartphone, SmartphoneNfc } from 'lucide-react';
 
-export default function Header({ score, highScore, theme, toggleTheme }) {
+export default function Header({ 
+  score, 
+  highScore, 
+  theme, 
+  toggleTheme, 
+  isSoundEnabled, 
+  toggleSound, 
+  isHapticsEnabled, 
+  toggleHaptics 
+}) {
   return (
     <header className="app-header">
       <div className="logo" onClick={() => window.location.reload()}>
@@ -24,9 +33,17 @@ export default function Header({ score, highScore, theme, toggleTheme }) {
         </div>
       </div>
 
-      <button className="theme-toggle" onClick={toggleTheme}>
-        {theme === 'dark' ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
-      </button>
+      <div className="header-actions" style={{ display: 'flex', gap: '8px' }}>
+        <button className="theme-toggle" onClick={toggleSound} title="Toggle Sound">
+          {isSoundEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+        </button>
+        {/* <button className="theme-toggle" onClick={toggleHaptics} title="Toggle Haptics">
+          {isHapticsEnabled ? <SmartphoneNfc size={18} /> : <Smartphone size={18} />}
+        </button> */}
+        <button className="theme-toggle" onClick={toggleTheme} title="Toggle Theme">
+          {theme === 'dark' ? <Sun size={18} strokeWidth={2.5} /> : <Moon size={18} strokeWidth={2.5} />}
+        </button>
+      </div>
     </header>
   );
 }

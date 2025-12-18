@@ -21,9 +21,13 @@ function App() {
   
   const [view, setView] = useState('menu'); // 'menu' | 'game'
   const [gameMode, setGameMode] = useState('zen'); // 'zen' | 'timeAttack'
-  const [category, setCategory] = useState('capital'); // 'capital' | 'continent'
+  const [category, setCategory] = useState('capital'); // 'capital' | 'continent' | 'flag'
   const [isLoading, setIsLoading] = useState(false);
   const [pendingMode, setPendingMode] = useState(null);
+
+  // Settings
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const [isHapticsEnabled, setIsHapticsEnabled] = useState(true);
 
   const { playClick, playCorrect, playIncorrect } = useSound();
   const game = useGame(gameMode, category);
@@ -34,26 +38,27 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // Continent Theme Handling
+  useEffect(() => {
+    if (view === 'game' && game.currentQuestion) {
+      document.documentElement.setAttribute('data-continent', game.currentQuestion.continent);
+    } else {
+      document.documentElement.removeAttribute('data-continent');
+    }
+  }, [view, game.currentQuestion]);
+
   const toggleTheme = () => {
     if (isThemeAnimating) return;
-    
-    playClick();
+    if (isSoundEnabled) playClick();
     const target = theme === 'dark' ? 'light' : 'dark';
     setWipeTarget(`to-${target}`);
     setIsThemeAnimating(true);
-    
-    // Switch theme halfway through animation (0.8s total)
-    setTimeout(() => {
-      setTheme(target);
-    }, 400);
-
-    setTimeout(() => {
-      setIsThemeAnimating(false);
-    }, 800);
+    setTimeout(() => setTheme(target), 400);
+    setTimeout(() => setIsThemeAnimating(false), 800);
   };
 
   const startGame = (mode) => {
-    playClick();
+    if (isSoundEnabled) playClick();
     setPendingMode(mode);
     setIsLoading(true);
   };
@@ -66,11 +71,15 @@ function App() {
   };
 
   const handleOptionClick = (option) => {
-    game.handleAnswer(option, playCorrect, playIncorrect);
+    game.handleAnswer(
+      option, 
+      () => isSoundEnabled && playCorrect(), 
+      () => isSoundEnabled && playIncorrect()
+    );
   };
 
   const returnToMenu = () => {
-    playClick();
+    if (isSoundEnabled) playClick();
     setView('menu');
   };
 
@@ -89,6 +98,10 @@ function App() {
         toggleTheme={toggleTheme}
         score={game.score} 
         highScore={game.highScore}
+        isSoundEnabled={isSoundEnabled}
+        toggleSound={() => setIsSoundEnabled(!isSoundEnabled)}
+        isHapticsEnabled={isHapticsEnabled}
+        toggleHaptics={() => setIsHapticsEnabled(!isHapticsEnabled)}
       />
 
       <main className="main-content">
@@ -97,7 +110,7 @@ function App() {
             <span className="sub-label">Step into the journey</span>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '24px' }}>Global Explorer</h2>
             
-            <div data-testid="category-select" style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
+            <div data-testid="category-select" style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '32px' }}>
               <button 
                 className={`category-chip ${category === 'capital' ? 'active' : ''}`}
                 onClick={() => setCategory('capital')}
@@ -151,23 +164,49 @@ function App() {
               </div>
             )}
             
+            <div className="game-stats-overlay">
+              {game.streak > 0 && (
+                <div className={`streak-badge ${game.streak >= 5 ? 'mega' : ''}`}>
+                  🔥 {game.streak} Streak
+                </div>
+              )}
+              {game.multiplier > 1 && (
+                <div className="multiplier-badge">
+                  {game.multiplier}x Points
+                </div>
+              )}
+            </div>
+
             <div className="question-area">
               <span className="sub-label">
                 {category === 'capital' ? 'Identify the capital of' : 
                  category === 'continent' ? 'Which continent is this?' : 
                  'Identify this country'}
               </span>
-              {category === 'flag' ? (
-                <div className="flag-display-container">
-                  <img 
-                    src={`https://flagcdn.com/w320/${game.currentQuestion?.code}.png`} 
-                    alt="Flag" 
-                    className="flag-img"
-                  />
-                </div>
-              ) : (
-                <h2 className="country-name">{game.currentQuestion?.country}</h2>
-              )}
+              
+              <div className="visual-display">
+                {category === 'flag' ? (
+                  <div className="flag-display-container">
+                    <img 
+                      src={`https://flagcdn.com/w320/${game.currentQuestion?.code}.png`} 
+                      alt="Flag" 
+                      className="flag-img"
+                    />
+                  </div>
+                ) : category === 'continent' ? (
+                   <div className="map-display-container">
+                    <img 
+                      src={`https://raw.githubusercontent.com/djaiss/mapsicon/master/all/${game.currentQuestion?.code}/256.png`} 
+                      alt="Map" 
+                      className="map-img"
+                      onError={(e) => e.target.style.display = 'none'}
+                    />
+                    <h2 className="country-name">{game.currentQuestion?.country}</h2>
+                  </div>
+                ) : (
+                  <h2 className="country-name">{game.currentQuestion?.country}</h2>
+                )}
+              </div>
             </div>
 
             <div className="options-grid">
@@ -188,6 +227,13 @@ function App() {
                 </button>
               ))}
             </div>
+
+            {game.feedback === 'correct' && game.currentQuestion?.fact && (
+              <div className="fact-banner">
+                <span className="fact-icon">🌍</span>
+                <p>{game.currentQuestion.fact}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -200,7 +246,7 @@ function App() {
             </div>
             <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '10px' }}>Beautiful Run</h2>
             <p style={{ color: 'var(--text-sub)', fontSize: '1.1rem', marginBottom: '40px' }}>
-              Your journey reached <strong style={{ color: 'var(--primary)', fontSize: '1.4rem' }}>{game.score}</strong> destinations.
+              Your journey reached <strong style={{ color: 'var(--primary)', fontSize: '1.4rem' }}>{Math.floor(game.score)}</strong> destinations.
             </p>
             <div className="actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button className="primary-btn" onClick={() => startGame(gameMode)}>Try Again</button>
@@ -227,13 +273,15 @@ function App() {
           color: var(--primary);
           border-color: var(--primary);
         }
-        .flag-display-container {
+        .flag-display-container, .map-display-container {
           margin: 20px 0;
           display: flex;
+          flex-direction: column;
+          align-items: center;
           justify-content: center;
           animation: fadeIn 0.5s ease-out;
         }
-        .flag-img {
+        .flag-img, .map-img {
           max-width: 240px;
           height: auto;
           border-radius: 12px;
@@ -241,12 +289,78 @@ function App() {
           border: 4px solid white;
           transition: transform 0.3s ease;
         }
+        .map-img {
+          filter: grayscale(1) invert(1) contrast(1.2);
+          opacity: 0.8;
+          border: none;
+          box-shadow: none;
+          max-width: 180px;
+          margin-bottom: 20px;
+        }
         .flag-img:hover {
           transform: scale(1.05);
+        }
+        .game-stats-overlay {
+          position: absolute;
+          top: 24px;
+          right: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          align-items: flex-end;
+        }
+        .streak-badge {
+          background: #ff4757;
+          color: white;
+          padding: 4px 12px;
+          border-radius: 100px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+          animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .streak-badge.mega {
+          background: linear-gradient(45deg, #ff4757, #ffa502);
+          transform: scale(1.1);
+        }
+        .multiplier-badge {
+          background: var(--primary);
+          color: white;
+          padding: 4px 12px;
+          border-radius: 100px;
+          font-size: 0.75rem;
+          font-weight: 700;
+        }
+        .fact-banner {
+          margin-top: 32px;
+          padding: 16px 20px;
+          background: var(--accent-soft);
+          border-radius: 16px;
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          text-align: left;
+          animation: slideUp 0.4s ease-out;
+          border: 1px solid var(--border-color);
+        }
+        .fact-icon { font-size: 1.2rem; }
+        .fact-banner p {
+          font-size: 0.85rem;
+          color: var(--text-main);
+          line-height: 1.5;
+          margin: 0;
         }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes popIn {
+          from { transform: scale(0); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
       `}</style>
     </div>

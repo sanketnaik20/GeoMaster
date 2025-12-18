@@ -23,15 +23,18 @@ export const useSound = () => {
   const playCorrect = () => {
     playTone(600, 'sine', 0.1);
     setTimeout(() => playTone(800, 'sine', 0.2), 100);
+    if ('vibrate' in navigator) navigator.vibrate([50, 30, 50]);
   };
 
   const playIncorrect = () => {
     playTone(300, 'sawtooth', 0.2);
     setTimeout(() => playTone(200, 'sawtooth', 0.2), 150);
+    if ('vibrate' in navigator) navigator.vibrate(200);
   };
 
   const playClick = () => {
     playTone(400, 'sine', 0.05);
+    if ('vibrate' in navigator) navigator.vibrate(10);
   };
 
   return { playCorrect, playIncorrect, playClick };
