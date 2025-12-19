@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useGame } from './hooks/useGame';
 import { useSound } from './hooks/useSound';
+import { useMultiplayer } from './hooks/useMultiplayer';
 
 // Components
 import Header from './components/layout/Header';
@@ -9,6 +10,8 @@ import MainMenu from './components/home/MainMenu';
 import QuizView from './components/game/QuizView';
 import ResultView from './components/game/ResultView';
 import LoadingScreen from './components/common/LoadingScreen';
+import MultiplayerLobby from './components/game/MultiplayerLobby';
+import MultiplayerQuizView from './components/game/MultiplayerQuizView';
 
 // Lazy loaded
 const GlobeWordle = lazy(() => import('./components/game/GlobeWordle'));
@@ -33,6 +36,7 @@ function App() {
 
   const { playClick, playCorrect, playIncorrect } = useSound();
   const game = useGame(gameMode, category);
+  const multi = useMultiplayer();
 
   // Theme Handling
   useEffect(() => {
@@ -74,6 +78,8 @@ function App() {
   const onLoadingComplete = () => {
     if (pendingMode === 'worldle') {
       setView('worldle');
+    } else if (pendingMode === 'multiplayer') {
+      setView('multiplayer');
     } else {
       setGameMode(pendingMode);
       game.resetGame();
@@ -88,6 +94,58 @@ function App() {
       () => isSoundEnabled && playCorrect(), 
       () => isSoundEnabled && playIncorrect()
     );
+  };
+
+  // Multiplayer Actions
+  const handleMultiAnswer = (isCorrect) => {
+    if (isCorrect) {
+      if (isSoundEnabled) playCorrect();
+      const newScore = multi.gameState.score + 1;
+      const nextIndex = multi.gameState.questionIndex + 1;
+      
+      const updates = { 
+        score: newScore,
+        questionIndex: nextIndex 
+      };
+
+      multi.updateGameState(updates);
+    } else {
+      if (isSoundEnabled) playIncorrect();
+      // Only play sound, do NOT increment questionIndex
+    }
+  };
+
+  // Global Timer and End State Sync
+  useEffect(() => {
+    if (view !== 'multiplayer-game' || multi.gameState.status !== 'playing') return;
+
+    const timer = setInterval(() => {
+      // Only the host manages the authoritative timer
+      if (multi.isHost) {
+        const nextTime = Math.max(0, multi.gameState.timeLeft - 1);
+        const updates = { timeLeft: nextTime };
+        
+        if (nextTime === 0) {
+          updates.status = 'ended';
+        }
+        
+        multi.updateGameState(updates);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [view, multi.gameState.status, multi.isHost, multi.gameState.timeLeft, multi.updateGameState]);
+
+  // Sync opponent score when they update it
+  useEffect(() => {
+    if (view === 'multiplayer-game' || multi.gameState.status === 'playing') {
+        if (view !== 'multiplayer-game') setView('multiplayer-game');
+    }
+  }, [multi.gameState.status, view]);
+
+  const startMultiplayerBattle = () => {
+    if (isSoundEnabled) playClick();
+    multi.startGame(category);
   };
 
   const returnToMenu = () => {
@@ -126,6 +184,7 @@ function App() {
             setCategory={setCategory}
             onStartGame={startGame}
             onStartWorldle={startWorldle}
+            onStartMultiplayer={() => startGame('multiplayer')}
           />
         )}
 
@@ -144,6 +203,28 @@ function App() {
             gameMode={gameMode}
             onRestart={startGame}
             onMenu={returnToMenu}
+          />
+        )}
+
+        {view === 'multiplayer' && (
+          <MultiplayerLobby 
+            myId={multi.myId}
+            opponentId={multi.opponentId}
+            connectionStatus={multi.connectionStatus}
+            onConnect={multi.connectToPeer}
+            onStartGame={startMultiplayerBattle}
+            onBack={returnToMenu}
+            category={category}
+            setCategory={setCategory}
+            isHost={multi.isHost}
+          />
+        )}
+
+        {view === 'multiplayer-game' && (
+          <MultiplayerQuizView 
+            gameState={multi.gameState}
+            onAnswer={handleMultiAnswer}
+            onExit={returnToMenu}
           />
         )}
 

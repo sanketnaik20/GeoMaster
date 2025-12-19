@@ -5,7 +5,8 @@ const MainMenu = ({
   category, 
   setCategory, 
   onStartGame, 
-  onStartWorldle 
+  onStartWorldle,
+  onStartMultiplayer
 }) => {
   const categories = [
     { id: 'capital', label: 'Capitals' },
@@ -53,6 +54,17 @@ const MainMenu = ({
           <span className="mode-arrow">→</span>
         </button>
         
+        <button className="mode-btn special multiplayer" onClick={onStartMultiplayer}>
+          <div className="mode-btn-content">
+            <span className="icon">⚔️</span>
+            <div className="text">
+              <h3>Multiplayer</h3>
+              <p>Battle with friends in real-time</p>
+            </div>
+          </div>
+          <span className="mode-arrow">→</span>
+        </button>
+
         <button className="mode-btn special" onClick={onStartWorldle}>
           <div className="mode-btn-content">
             <span className="icon">🌍</span>

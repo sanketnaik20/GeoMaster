@@ -50,3 +50,20 @@
   background: linear-gradient(to right, var(--card-bg), var(--accent-soft));
   border-left: 4px solid var(--primary);
 }
+
+.mode-btn.special.multiplayer {
+  background: rgba(79, 172, 254, 0.05);
+  border-left: 4px solid #4facfe;
+}
+
+.mode-btn.special.multiplayer:hover {
+  background: rgba(79, 172, 254, 0.1);
+  box-shadow: 0 8px 30px rgba(79, 172, 254, 0.15);
+}
+
+.mode-btn.special.multiplayer .icon {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
