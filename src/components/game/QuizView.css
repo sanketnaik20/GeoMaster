@@ -91,6 +91,34 @@
   margin: 0;
 }
 
+@media (max-width: 600px) {
+  .flag-img {
+    max-width: 180px;
+    border-width: 3px;
+  }
+  .map-img {
+    max-width: 140px;
+    margin-bottom: 12px;
+  }
+  .flag-display-container, .map-display-container {
+    margin: 10px 0;
+  }
+  .fact-banner {
+    margin-top: 20px;
+    padding: 12px;
+    font-size: 0.8rem;
+  }
+  .game-stats-overlay {
+    position: relative;
+    top: 0;
+    right: 0;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 16px;
+    margin-top: -10px; /* Pull it up a bit if card padding is large */
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }

@@ -236,3 +236,17 @@
 
 @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+@media (max-width: 600px) {
+  .worldle-card { padding: 20px !important; }
+  .worldle-title { font-size: 1.4rem; }
+  .share-country { font-size: 1.8rem; }
+  .share-stat-box { padding: 15px 30px; }
+  .share-stat-box .value { font-size: 1.8rem; }
+  .guess-row { padding: 10px 12px; font-size: 0.9rem; }
+  .distance-metrics { gap: 6px; }
+  .proximity-bar { width: 30px; }
+  .back-btn-float { top: 12px; left: 12px; width: 32px; height: 32px; }
+  .win-actions { flex-direction: column; }
+  .win-actions button { width: 100%; }
+}

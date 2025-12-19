@@ -63,6 +63,7 @@ const MainMenu = ({
           </div>
           <span className="mode-arrow">→</span>
         </button>
+  
       </div>
     </div>
   );
